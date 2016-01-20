@@ -1,0 +1,67 @@
+#include "cv.h"
+#include "highgui.h"
+#include "math.h"
+
+int main(){
+
+	IplImage* obraz_zrodlowy;
+	IplImage* obraz_szarosc;
+	IplImage* obraz_progowanie;
+	IplImage* obraz_filtracja;
+	IplImage* obraz_kontury;
+	IplImage* obraz_kontury_2;
+
+	obraz_zrodlowy = cvLoadImage("arm.jpg", 1);
+	obraz_szarosc = cvCreateImage (cvSize(obraz_zrodlowy->width, obraz_zrodlowy->height), IPL_DEPTH_8U, 1);
+
+	cvCvtColor (obraz_zrodlowy, obraz_szarosc, CV_BGR2GRAY);
+	obraz_progowanie = cvCloneImage (obraz_szarosc);
+	obraz_filtracja = cvCloneImage (obraz_zrodlowy);
+
+	CvMemStorage * pamiec = cvCreateMemStorage(0);
+	CvSeq * kontur = 0;
+
+	cvNamedWindow ("Zrodlowy", 1);
+	cvNamedWindow ("Progowanie", 1);
+	cvNamedWindow ("Filtracja", 1);
+	cvNamedWindow ("Kontury", 1);
+	cvNamedWindow ("Wynik", 1);
+
+	//FILTRACJA
+	cvSmooth(obraz_zrodlowy, obraz_filtracja,CV_GAUSSIAN,5,5);
+
+	//PROGOWANIE
+	cvThreshold(obraz_szarosc, obraz_progowanie, 150, 255, CV_THRESH_BINARY);
+
+	//KONTURY
+	obraz_kontury = cvCreateImage(cvGetSize(obraz_progowanie), IPL_DEPTH_8U, 3);
+	obraz_kontury = cvCloneImage (obraz_progowanie);
+	obraz_kontury_2 = cvCreateImage(cvGetSize(obraz_progowanie), IPL_DEPTH_8U, 3);
+	obraz_kontury_2 = cvCloneImage (obraz_zrodlowy);
+
+	cvFindContours(obraz_kontury, pamiec, &kontur, sizeof(CvContour), CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
+	cvDrawContours(obraz_kontury_2, kontur, CV_RGB(0, 255, 0), CV_RGB(255, 0, 0), 2, 2, 8);
+
+	cvShowImage ("Zrodlowy", obraz_zrodlowy);
+	cvShowImage ("Progowanie", obraz_progowanie);
+	cvShowImage ("Filtracja", obraz_filtracja);
+	cvShowImage ("Kontury", obraz_kontury);
+	cvShowImage ("Wynik", obraz_kontury_2);
+
+	cvWaitKey(0);
+
+	cvDestroyWindow ("Zrodlowy");
+	cvDestroyWindow ("Progowanie");
+	cvDestroyWindow ("Filtracja");
+	cvDestroyWindow ("Kontury");
+	cvDestroyWindow ("Wynik");
+
+	cvReleaseImage (&obraz_zrodlowy);
+	cvReleaseImage (&obraz_szarosc);
+	cvReleaseImage (&obraz_progowanie);
+	cvReleaseImage (&obraz_filtracja);
+	cvReleaseImage (&obraz_kontury);
+	cvReleaseImage (&obraz_kontury_2);
+
+	return 0;
+}
